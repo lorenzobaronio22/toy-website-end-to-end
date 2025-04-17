@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  validate:
+  destroy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -40,5 +40,4 @@ jobs:
         failOnStdErr: false
         resourceGroupName: PlayGround
         template: ./destroy/main.bicep
-        additionalArguments: --what-if
         deploymentMode: Complete
