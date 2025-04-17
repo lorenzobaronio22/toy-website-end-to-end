@@ -27,7 +27,7 @@ jobs:
     needs: [build, lint]
     with:
       environmentType: Test
-      resourceGroupName: ToyWebsiteTest
+      resourceGroupName: PlayGround
       reviewApiUrl: https://sandbox.contoso.com/reviews
     secrets:
       AZURE_CREDENTIALS_PLAYGROUND: ${{ secrets.AZURE_CREDENTIALS_PLAYGROUND }}
@@ -42,7 +42,7 @@ jobs:
     - deploy-test
     with:
       environmentType: Production
-      resourceGroupName: ToyWebsiteProduction
+      resourceGroupName: PlayGround
       reviewApiUrl: https://api.contoso.com/reviews
     secrets:
       AZURE_CREDENTIALS_PLAYGROUND: ${{ secrets.AZURE_CREDENTIALS_PLAYGROUND }}
