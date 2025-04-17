@@ -1,31 +1,114 @@
+# Manage end-to-end deployment with Bicep and GitHub Actions
 
-# Contributing
+Reference [link](https://learn.microsoft.com/en-us/training/modules/manage-end-end-deployment-scenarios-using-bicep-github-actions)
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+## Notes
 
-When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
+- azure cli login
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+```shell
+az login
+```
 
-# Legal Notices
+- create managed identities
 
-Microsoft and any contributors grant you a license to the Microsoft documentation and other content
-in this repository under the [Creative Commons Attribution 4.0 International Public License](https://creativecommons.org/licenses/by/4.0/legalcode),
-see the [LICENSE](LICENSE) file, and grant you a license to any code in the repository under the [MIT License](https://opensource.org/licenses/MIT), see the
-[LICENSE-CODE](LICENSE-CODE) file.
+```shell
+githubOrganizationName='lorenzobaronio22'
+githubRepositoryName='toy-website-end-to-end'
 
-Microsoft, Windows, Microsoft Azure and/or other Microsoft products and services referenced in the documentation
-may be either trademarks or registered trademarks of Microsoft in the United States and/or other countries.
-The licenses for this project do not grant you rights to use any Microsoft names, logos, or trademarks.
-Microsoft's general trademark guidelines can be found at http://go.microsoft.com/fwlink/?LinkID=254653.
+# Test Env
+testApplicationRegistrationDetails=$(az ad app create --display-name 'toy-website-end-to-end-test')
+testApplicationRegistrationObjectId=$(echo $testApplicationRegistrationDetails | jq -r '.id')
+testApplicationRegistrationAppId=$(echo $testApplicationRegistrationDetails | jq -r '.appId')
 
-Privacy information can be found at https://privacy.microsoft.com/en-us/
+az ad app federated-credential create \
+   --id $testApplicationRegistrationObjectId \
+   --parameters "{\"name\":\"toy-website-end-to-end-test\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:${githubOrganizationName}/${githubRepositoryName}:environment:Test\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
+# {
+#   "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#applications('bc5f4337-56b8-46b5-a2f0-daf7569e8c7c')/federatedIdentityCredentials/$entity",
+#   "audiences": [
+#     "api://AzureADTokenExchange"
+#   ],
+#   "description": null,
+#   "id": "4559e2e3-1b7c-489c-9c23-15aed16f3048",
+#   "issuer": "https://token.actions.githubusercontent.com",
+#   "name": "toy-website-end-to-end-test",
+#   "subject": "repo:lorenzobaronio22/toy-website-end-to-end:environment:Test"
+# }
 
-Microsoft and any contributors reserve all other rights, whether under their respective copyrights, patents,
-or trademarks, whether by implication, estoppel or otherwise.
+az ad app federated-credential create \
+   --id $testApplicationRegistrationObjectId \
+   --parameters "{\"name\":\"toy-website-end-to-end-test-branch\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:${githubOrganizationName}/${githubRepositoryName}:ref:refs/heads/main\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
+# {
+#   "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#applications('bc5f4337-56b8-46b5-a2f0-daf7569e8c7c')/federatedIdentityCredentials/$entity",
+#   "audiences": [
+#     "api://AzureADTokenExchange"
+#   ],
+#   "description": null,
+#   "id": "9cffdd4a-e72d-4524-a281-372002950167",
+#   "issuer": "https://token.actions.githubusercontent.com",
+#   "name": "toy-website-end-to-end-test-branch",
+#   "subject": "repo:lorenzobaronio22/toy-website-end-to-end:ref:refs/heads/main"
+# }
+
+# Prod Env
+productionApplicationRegistrationDetails=$(az ad app create --display-name 'toy-website-end-to-end-production')
+productionApplicationRegistrationObjectId=$(echo $productionApplicationRegistrationDetails | jq -r '.id')
+productionApplicationRegistrationAppId=$(echo $productionApplicationRegistrationDetails | jq -r '.appId')
+
+az ad app federated-credential create \
+   --id $productionApplicationRegistrationObjectId \
+   --parameters "{\"name\":\"toy-website-end-to-end-production\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:${githubOrganizationName}/${githubRepositoryName}:environment:Production\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
+# {
+#   "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#applications('6802893c-5425-4d35-807e-671a07025e73')/federatedIdentityCredentials/$entity",
+#   "audiences": [
+#     "api://AzureADTokenExchange"
+#   ],
+#   "description": null,
+#   "id": "41d41ac8-e056-4721-a116-1e8b3ecc7b05",
+#   "issuer": "https://token.actions.githubusercontent.com",
+#   "name": "toy-website-end-to-end-production",
+#   "subject": "repo:lorenzobaronio22/toy-website-end-to-end:environment:Production"
+# }
+
+az ad app federated-credential create \
+   --id $productionApplicationRegistrationObjectId \
+   --parameters "{\"name\":\"toy-website-end-to-end-production-branch\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:${githubOrganizationName}/${githubRepositoryName}:ref:refs/heads/main\",\"audiences\":[\"api://AzureADTokenExchange\"]}"
+# {
+#   "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#applications('6802893c-5425-4d35-807e-671a07025e73')/federatedIdentityCredentials/$entity",
+#   "audiences": [
+#     "api://AzureADTokenExchange"
+#   ],
+#   "description": null,
+#   "id": "783faa9b-4da3-4f7a-96ce-fa7b1bb5919c",
+#   "issuer": "https://token.actions.githubusercontent.com",
+#   "name": "toy-website-end-to-end-production-branch",
+#   "subject": "repo:lorenzobaronio22/toy-website-end-to-end:ref:refs/heads/main"
+# }
+```
+
+- create resource groups
+
+```shell
+# Test Env
+testResourceGroupResourceId=$(az group create --name ToyWebsiteTest --location northeurope --query id --output tsv)
+
+az ad sp create --id $testApplicationRegistrationObjectId
+az role assignment create \
+   --assignee $testApplicationRegistrationAppId \
+   --role Contributor \
+   --scope $testResourceGroupResourceId
+
+# Prod Env
+productionResourceGroupResourceId=$(az group create --name ToyWebsiteProduction --location westus3 --query id --output tsv)
+
+az ad sp create --id $productionApplicationRegistrationObjectId
+az role assignment create \
+   --assignee $productionApplicationRegistrationAppId \
+   --role Contributor \
+   --scope $productionResourceGroupResourceId
+```
+
+> [!CAUTION]
+> `az role assignment create` commands return a `Bad Request` error. So I stopped here and decide to reuse a Service principal created without federeted-credential, just simple secrets credentials.
+
