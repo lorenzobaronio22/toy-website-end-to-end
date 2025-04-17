@@ -13,6 +13,10 @@ permissions:
 
 jobs:
 
+  # Build the application and database.
+  build:
+    uses: ./.github/workflows/build.yml
+
   # Lint the Bicep file.
   lint:
     uses: ./.github/workflows/lint.yml
@@ -20,27 +24,26 @@ jobs:
   # Deploy to the test environment.
   deploy-test:
     uses: ./.github/workflows/deploy.yml
-    needs: lint
+    needs: [build, lint]
     with:
       environmentType: Test
       resourceGroupName: ToyWebsiteTest
       reviewApiUrl: https://sandbox.contoso.com/reviews
     secrets:
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID_TEST }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CREDENTIALS_PLAYGROUND: ${{ secrets.AZURE_CREDENTIALS_PLAYGROUND }}
       reviewApiKey: ${{ secrets.REVIEW_API_KEY_TEST }}
 
   # Deploy to the production environment.
   deploy-production:
     uses: ./.github/workflows/deploy.yml
-    needs: deploy-test
+    needs:
+    - lint
+    - build
+    - deploy-test
     with:
       environmentType: Production
       resourceGroupName: ToyWebsiteProduction
       reviewApiUrl: https://api.contoso.com/reviews
     secrets:
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID_PRODUCTION }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CREDENTIALS_PLAYGROUND: ${{ secrets.AZURE_CREDENTIALS_PLAYGROUND }}
       reviewApiKey: ${{ secrets.REVIEW_API_KEY_PRODUCTION }}
