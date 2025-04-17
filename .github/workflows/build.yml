@@ -13,7 +13,7 @@ jobs:
     - name: Install .NET Core
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 3.1
+        dotnet-version: 9
 
     - name: Build publishable website
       run: |
@@ -23,10 +23,10 @@ jobs:
     - name: Zip publishable website
       run: |
         zip -r publish.zip .
-      working-directory: ./src/ToyCompany/ToyCompany.Website/bin/Release/netcoreapp3.1/publish
+      working-directory: ./src/ToyCompany/ToyCompany.Website/bin/Release/net9.0/publish
 
     - name: Upload website as workflow artifact
       uses: actions/upload-artifact@v4
       with:
         name: website
-        path: ./src/ToyCompany/ToyCompany.Website/bin/Release/netcoreapp3.1/publish/publish.zip
+        path: ./src/ToyCompany/ToyCompany.Website/bin/Release/net9.0/publish/publish.zip
