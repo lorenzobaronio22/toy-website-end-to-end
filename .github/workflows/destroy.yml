@@ -1,0 +1,44 @@
+name: destroy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: azure/login@v2
+      name: Sign in to Azure
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS_PLAYGROUND }}
+    - uses: azure/arm-deploy@v1
+      name: Run preflight validation
+      with:
+        deploymentName: ${{ github.run_number }}
+        resourceGroupName: PlayGround
+        template: ./destroy/main.bicep
+        deploymentMode: Validate
+    - uses: azure/arm-deploy@v1
+      name: Run what-if
+      with:
+        failOnStdErr: false
+        resourceGroupName: PlayGround
+        template: ./destroy/main.bicep
+        additionalArguments: --what-if
+        deploymentMode: Complete
+    - uses: azure/arm-deploy@v1
+      name: Run destroy
+      with:
+        failOnStdErr: false
+        resourceGroupName: PlayGround
+        template: ./destroy/main.bicep
+        additionalArguments: --what-if
+        deploymentMode: Complete
