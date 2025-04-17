@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/download-artifact@v4
-    - uses: azure/login@v3
+    - uses: azure/login@v2
       name: Sign in to Azure
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS_PLAYGROUND }}
